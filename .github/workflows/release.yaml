@@ -94,13 +94,7 @@ jobs:
 
       - name: Generate checksums
         run: |
-          for file in ./**/*.so; do
-            sha256sum "$file" > "${file}.sha256"
-          done
-          for file in ./**/*.dylib; do
-            sha256sum "$file" > "${file}.sha256"
-          done
-          for file in ./**/*.dll; do
+          for file in ./**/*; do
             sha256sum "$file" > "${file}.sha256"
           done
 

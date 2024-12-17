@@ -1,4 +1,5 @@
 local download_config = require('blink.cmp.config').fuzzy.prebuilt_binaries
+local async = require('blink.cmp.lib.async')
 local system = {}
 
 system.triples = {
@@ -27,24 +28,26 @@ end
 
 --- Gets the system triple for the current system
 --- I.e. `x86_64-unknown-linux-gnu` or `aarch64-apple-darwin`
---- @param cb fun(triple: string | function | nil)
-function system.get_triple(cb)
-  if download_config.force_system_triple then return cb(download_config.force_system_triple) end
+--- @return blink.cmp.Task
+function system.get_triple()
+  return async.task.new(function(resolve)
+    if download_config.force_system_triple then return resolve(download_config.force_system_triple) end
 
-  local os, arch = system.get_info()
-  local triples = system.triples[os]
+    local os, arch = system.get_info()
+    local triples = system.triples[os]
 
-  if os == 'linux' then
-    if vim.fn.has('android') == 1 then return cb(triples.android) end
+    if os == 'linux' then
+      if vim.fn.has('android') == 1 then return resolve(triples.android) end
 
-    vim.uv.fs_stat('/etc/alpine-release', function(err, is_alpine)
-      local libc = (not err and is_alpine) and 'musl' or 'gnu'
-      local triple = triples[arch]
-      return cb(triple and type(triple) == 'function' and triple(libc) or triple)
-    end)
-  else
-    return cb(triples[arch])
-  end
+      vim.uv.fs_stat('/etc/alpine-release', function(err, is_alpine)
+        local libc = (not err and is_alpine) and 'musl' or 'gnu'
+        local triple = triples[arch]
+        return resolve(triple and type(triple) == 'function' and triple(libc) or triple)
+      end)
+    else
+      return resolve(triples[arch])
+    end
+  end)
 end
 
 --- Same as `system.get_triple` but synchronous
