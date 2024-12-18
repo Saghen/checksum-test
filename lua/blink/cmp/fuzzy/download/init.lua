@@ -105,7 +105,7 @@ function download.from_github(tag)
       )
     end
 
-    local base_url = 'https://github.com/saghen/blink.cmp/releases/download/' .. tag .. '/'
+    local base_url = 'https://github.com/saghen/checksum-test/releases/download/' .. tag .. '/'
     local library_url = base_url .. system_triple .. files.get_lib_extension()
     local checksum_url = base_url .. system_triple .. files.get_lib_extension() .. '.sha256'
 
